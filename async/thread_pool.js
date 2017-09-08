@@ -3,6 +3,13 @@ const util = require('util');
 
 const async_hooks = require('async_hooks');
 
+const {
+  performance,
+  PerformanceObserver
+} = require('perf_hooks');
+
+process._tickCallback(console.log)
+
 const start = process.hrtime();
 
 //console.log('thread pool size %d', process.env.UV_THREADPOOL_SIZE);
