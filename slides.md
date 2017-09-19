@@ -1,60 +1,120 @@
 ___
-## Agenda
-> When and how do we ~~do~~ use async functions?
+## Title
+our topic today is Async development in Node. As you can see this is just an introduction. So we'll cover a lot of basic stuff and just a few more advanced things.
 
-as a quick intro -- just to cover the basics
+My name is Constantine, and I have to admit I'm learning Nodejs too. So please don't ask me any tricky questions. JK. Once you have a question, type it in and I'll try my best to answer it.
+___
 
-> How does EventLoop handle async functions in Node.js?
 
-libuv is the engine behind Nodejs
-
-> ~~Different~~ Differences between setTimeout & setInterval in browser and Node.js
-
-> What are setImmediate and nextTick?
 
 ___
-#_INSERT SLIDE?_
+## Agenda
+So here is an agenda for today. First, we'll have a short overview of what Nodejs has got in store for us in terms of async development.
+
+then we'll take a loot at Nodejs internals and see how it actually handles the async functionality.
+
+
+
+Also we'll take a look at the 3rd "async" library
+
+___
 ## sync vs async 
-_some image here?_
-```javascript
-/**  add some code here?? **/
-```
 
-`Synchronous way`: It waits for each operation to complete, after that only it executes the next operation. For your query: The console.log() command will not be executed until & unless the query has finished executing to get all the result from Database.
+“Metaphor”
 
-`Asynchronous way`: It never waits for each operation to complete, rather it executes all operations in the first GO only. The result of each operation will be handled once the result is available. For your query: The console.log() command will be executed soon after the Database.Query() method. While the Database query runs in the background and loads the result once it is finished retrieving the data.
 
+In simpler terms:
+SYNCHRONOUS
+You are in a queue to get a movie ticket. You cannot get one until everybody in front of you gets one, and the same applies to the people queued behind you.
+ASYNCHRONOUS
+You are in a restaurant with many other people. You order your food. Other people can also order their food, they don't have to wait for your food to be cooked and served to you before they can order. In the kitchen restaurant workers are continuously cooking, serving, and taking orders. People will get their food served as soon as it is cooked.
 
 
 ## When do we need async functions?
-_add db's queries??_
+so here is a list of operation types which may require an async approach 
+they all have something to do with external IO, so we can potentially leverage kernel functions and run them in conjunction with main JS code.  
+
+Node.js itself is single threaded, but some tasks can run parallelly - thanks to its asynchronous nature.
+But what does running parallelly mean in practice?
+Since we program a single threaded VM, it is essential that we do not block execution by waiting for I/O, but handle them concurrently with the help of Node.js's event driven APIs.
+
 
 ___
 ## Sync functions
 
+* not production ready
+* sync versions of read file and write file are used here
+* describe program flow
+
 ___
 ## Callbacks
+we can sure do better and copy it in async fasion
+one of the most traditional ways of async implementation
+CALLBACK HELL
 
 ___
 
 ## Promises
+promisify
+McDonalds analogy
+helps to resolve callback hell and makes your code look like sync code
+we can simply chain them
+if an inner callback returns a promise it still gets added to the queue
+(writeFileAsync)
 
 ___
 
 ## Async functions
+this is a relatively new approach 
+a part of JS syntax
+a function marked as async returns a promise
+await statements form a chain
+looks even more sync
 
 ---
-## Async library
+
+## Timers
+setTimeout/setInterval are the same as in browser
+we can pass additional parameters
+setImmediate is implemented in some browsers, but it is still considered as Node specific
 
 ---
+## Timers ref/unref
+timers are ref'ed by default
+we don't have it at the browser
+
+## Timers ref/unref
+top = ref
+
+---
+## Timers ref/unref demo
+
+---
+
+## setTimeout vs setImmediate 
+there is a good old pattern of running setTimeout with the delay of 0 in browser
+it makes the page more responsive sometimes
+
+---
+## setTimeout vs setImmediate Demo
+no way to predict which one fires first
+UNLESS
+---
+
+## setTimeout vs setImmediate 
+in this case the order is determinated
+we'll see why further
+
+---
+
 ## Event Loop
+* concurrency pattern!
+* JS can do only one thing at a time, but we still can do things concurrently.
 
 
 ---
-# _move this slide after setTimeout, setInterval, setImmediate into?_
 ## ~~EventLoop's~~ Event Loop phases
-* concurrency pattern!
-JS can do only one thing at a time, but we still can do things concurrently.
+
 
 Dispatch in chronological order:
 
@@ -66,121 +126,49 @@ Dispatch in chronological order:
 * check handles (drives setImmediate)
 * handle close callbacks
 
+how queues are formed
+
+
+---
+
+###nextTick
+not a part of libUV! a part of Node
+
+---
+
+## nextTick
+
 Where's `process.nextTick()`? Basically after each of the above steps
 
----
 
-## Timers
-* setTimeout - clearTimeout
-* setInterval - clearInterval
+## NextTick vs setImmediate  
+nextTick starves the Event Loop!
 
----
-
-#INSERT SLIDE?
-## SetImmediate
-* SetImmediate -- clearImmediate
-
----
-
-## Timers ref/unref
-
----
-
-## NextTick
-
----
-
-
-## gotcha #1
-### aka "`setImmediate()` is not always very immediate"
-
-https://github.com/nodejs/node-v0.x-archive/issues/5798
-
-`setImmediate()` does what `process.nextTick()` says it does 
-but actually doesn't: schedule the callback at the end of the current 
-tick / start of the next tick. 
-
-That said, I believe the current `setImmediate()` implementation has a 
-bug where it spreads out multiple callbacks over several ticks, i.e. 
-one callback per tick.  Tracking issue is 
-https://github.com/joyent/node/issues/5798 
-
-
-```javascript
-/// listing 50-setImmediate_vs_nextTick.js
-
-console.log('Program started.');
-
-setImmediate(function() {
-  console.log('in immediate.');
-  // another tick ends here
-});
-
-process.nextTick(function() {
-  console.log('in nextTick.');
-  // no tick ends here - another process.nextTick
-  // would just append to the current tick's queue
-});
-
-console.log('end of first tick.');
-// first tick ends here
-```
-![setImmediate vs nextTick order](./img/50-setImmediate_vs_nextTick-result.png "setImmediate vs nextTick order ")
----
-
-# _INSERT SLIDE?_
-## gotcha #2: nextTick starves the Event Loop!
-
-https://gist.github.com/brycebaril/ff86eeb90b53fd0c523e
- 
-@mafintosh asks: "Does anyone have a good code example of when to use `setImmediate` instead of `nextTick`?"
-
-https://twitter.com/mafintosh/startus/624590818125352960
+"Does anyone have a good code example of when to use `setImmediate` instead of `nextTick`?"
 
 The answer is "generally anywhere outside of core".
 
 `process.nextTick` is barely asynchronous. Flow-wise it is asynchronous, but it will trigger before any other asynchronous events can (timers, io, etc.) and thus can starve the event loop.
 
-In this script I show a starved event loop where I just synchronously block, use `nextTick` and `setImmediate`
-
-``` javascript
-///listing 51-setImmediate_vs_nextTick.js
-
-var loops = 11
-function run() {
-  loops--
-  for (var i = 0; i < 1e7; i++) {
-    Math.pow(Math.random(), Math.random())
-  }
-  if (loops > 0) {
-    if (process.argv[2] == "blocked") {
-      run()
-    }
-    if (process.argv[2] == "nexttick") {
-      process.nextTick(run)
-    }
-    if (process.argv[2] == "setimmediate") {
-      setImmediate(run)
-    }
-  }
-}
-
-var delay = 10
-var start = process.hrtime()
-setTimeout(function () {
-  var elapsed = process.hrtime(start)
-  var ms_elapsed = (elapsed[0] * 1000) + (elapsed[1] / 1e6)
-  console.log("I took %sms, expected to take %s", ms_elapsed, delay)
-}, delay)
-
-run()
-
-```
-
-![setImmediate vs nextTick blocking](./img/51-setImmediate_vs_nextTick-result.png "setImmediate vs nextTick blocking")
-
 ---
 
-## NextTick vs setImmediate
+## Async library
+Async is a utility module which provides straight-forward, powerful functions for working with asynchronous JavaScript
+
+Map
+Produces a new collection of values by mapping each value in collection through the function.
+fs.stat is async lib
+
+```javascript
+async.map(['file1','file2','file3'], fs.stat, function(err, results) {
+    // results is now an array of stats for each file
+});
+``` 
+
+Parallel
+Run the tasks collection of functions in parallel, without waiting until the previous function has completed. If any of the functions pass an error to its callback, the main callback is immediately called with the value of the error. Once the tasks have completed, the results are passed to the final callback as an array.
+
+Waterfall
+Runs the tasks array of functions in series, each passing their results to the next in the array. However, if any of the tasks pass an error to their own callback, the next function is not executed, and the main callback is immediately called with the error.
 
 ---
