@@ -1,8 +1,9 @@
 ___
 ## Title
+My name is Constantine,
 our topic today is Async development in Node. As you can see this is just an introduction. So we'll cover a lot of basic stuff and just a few more advanced things.
 
-My name is Constantine, and I have to admit I'm learning Nodejs too. So please don't ask me any tricky questions. JK. Once you have a question, type it in and I'll try my best to answer it.
+ Once you have a question, type it in and I'll try my best to answer it.
 ___
 
 
