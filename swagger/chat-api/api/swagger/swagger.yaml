@@ -10,7 +10,7 @@ basePath: /
 schemes:
   # tip: remove http to make production-grade
   - http
-  - https
+#  - https
 # format of bodies a client can send (Content-Type)
 consumes:
   - application/json
@@ -18,9 +18,35 @@ consumes:
 produces:
   - application/json
 paths:
+  /messages/create:
+    x-swagger-router-controller: messages
+    post:
+      tags: [messages]
+      description: adds a message to a chat
+      operationId: create
+      parameters:
+        - name: message
+          in: body
+          description: message to send
+          required: true
+          schema:
+            $ref: '#/definitions/Message'
+      responses:  
+        "200":
+          description: An array of messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
   /messages/all:
     x-swagger-router-controller: messages
     get:
+      tags: [messages]
       description: Returns all chat messsages to a user
       operationId: all
       responses:  
