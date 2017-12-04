@@ -18,6 +18,22 @@ consumes:
 produces:
   - application/json
 paths:
+  /messages/all:
+    x-swagger-router-controller: messages
+    get:
+      description: Returns all chat messsages to a user
+      operationId: all
+      responses:  
+        "200":
+          description: An array of messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Message'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /hello:
     # binds a127 app logic to a route
     x-swagger-router-controller: hello_world
@@ -44,8 +60,16 @@ paths:
             $ref: "#/definitions/ErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
+
 # complex objects have schema definitions
 definitions:
+  Message:
+    properties:
+      user:
+        type: string
+      text:
+        type: string
+  
   HelloWorldResponse:
     required:
       - message
