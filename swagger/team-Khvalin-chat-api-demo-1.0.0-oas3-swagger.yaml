@@ -1,0 +1,123 @@
+openapi: 3.0.0
+info:
+  description: This is a simple Chat API for Nodejs mentoring
+  version: 0.0.1-oas3
+  title: Simple Chat API Demo
+  contact:
+    email: Konstantin_Khvalin@epam.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+paths:
+  /messages/create:
+    post:
+      x-swagger-router-controller: messagesController
+      operationId: createPost
+
+      tags:
+        - messages
+      description: adds a message to a chat
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+
+        description: message to send
+        required: true
+
+
+
+      responses:
+        '200':
+          description: An array of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /messages/all:
+    get:
+      x-swagger-router-controller: messagesController
+      operationId: allGet    
+    
+      tags:
+        - messages
+      description: Returns all chat messsages to a user
+      responses:
+        '200':
+          description: An array of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /hello:
+    get:
+      x-swagger-router-controller: helloWorldController
+      operationId: helloWorldGet
+      
+      description: Returns 'Hello' to the caller
+      parameters:
+        - name: name
+          in: query
+          description: The name of the person to whom to say hello
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloWorldResponse'
+        default:
+          description: Error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+servers:
+  - url: '/api/'
+components:
+  schemas:
+    Message:
+      properties:
+        user:
+          type: string
+        text:
+          type: string
+    HelloWorldResponse:
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ErrorResponse:
+      required:
+        - message
+      properties:
+        message:
+          type: string
